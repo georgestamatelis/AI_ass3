@@ -81,7 +81,12 @@ class CSP():
         # Subclasses can print in a prettier way, or display with a GUI
         print(assignment)
 
-
+    def goal_test(self, state):
+        """The goal is to assign all variables, with all constraints satisfied."""
+        assignment = dict(state)
+        return (len(assignment) == len(self.variables)
+                and all(self.nconflicts(variables, assignment[variables], assignment) == 0
+                        for variables in self.variables))
 
     # These are for constraint propagation
 
@@ -240,21 +245,18 @@ def forward_checking(csp, var, value, assignment, removals):
 #________________________________________________________________________________________--_____
 ##Backtracking search
 
-def backtracking_search(csp,
-                        select_unassigned_variable=mrv,
-                        order_domain_values=unordered_domain_values,
-                        inference=no_inference):
+def backtracking_search(csp, select_unassigned_variable=first_unassigned_variable,
+                        order_domain_values=unordered_domain_values, inference=no_inference):
     """[Figure 6.5]"""
 
     def backtrack(assignment):
         if len(assignment) == len(csp.variables):
             return assignment
         var = select_unassigned_variable(assignment, csp)
-        for value in csp.domains[var]:
-            if 0== csp.nconflicts(var, value, assignment):
+        for value in order_domain_values(var, assignment, csp):
+            if 0 == csp.nconflicts(var, value, assignment):
                 csp.assign(var, value, assignment)
                 removals = csp.suppose(var, value)
-                #print("removals is ",removals)
                 if inference(csp, var, value, assignment, removals):
                     result = backtrack(assignment)
                     if result is not None:
@@ -264,7 +266,7 @@ def backtracking_search(csp,
         return None
 
     result = backtrack({})
-    #assert result is csp.goal_test(result)
+    assert result is None or csp.goal_test(result)
     return result
 ################## ##################################################################################################
 #_________________________________________________________________________________________________________________
@@ -295,12 +297,8 @@ def SmallKakuroConstraints(problem,setVar,setVal,var,val):
     keep a dictionary of box:neighbours which need to be different
     """
     tester=problem.infer_assignment()
-    ##do some early error checks to see if somethings is wrong quickly without having to query the entrire problem
-    if (setVar=='3,4' and (setVal>=5 or setVal==2 )) or (var=='3,4' and (val>=5 or val==2)):
-        return False
-    if('4,2' in tester ):
-        if(tester['4,2']==3):
-            return False
+    tester[setVar]=setVal
+    tester[var]=val
     if setVal==val:
         return False
     ####time to take sums into consideration
@@ -373,6 +371,7 @@ def SmallKakuroSolver():
     print(backtracking_search(problemCopy,select_unassigned_variable=first_unassigned_variable))
     end=time.time()
     print("This solution was found in",end-start,"By AC3")
+
 if __name__ == "__main__":
     SmallKakuroSolver()
     #graphColouring()
