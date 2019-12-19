@@ -55,15 +55,14 @@ def fourX4_kakuro1():
     problem1=CSP(variables,domain,neighbors,fourX4_kakuro1Constraints)
     problem2=CSP(variables,domain,neighbors,fourX4_kakuro1Constraints)
     problem3=CSP(variables,domain,neighbors,fourX4_kakuro1Constraints)
+    #start=time.time()
+    #solution1=backtracking_search(problem1,select_unassigned_variable=first_unassigned_variable,order_domain_values=unordered_domain_value,inference=no_inference)
+    #print(solution1,"in time",time.time()-start,"by backtracking")
     start=time.time()
-    solution1=backtracking_search(problem1,select_unassigned_variable=first_unassigned_variable,order_domain_values=unordered_domain_values,inference=no_inference)
-    print(solution1,"in time",time.time()-start,"by backtracking")
-    start=time.time()
-    solution2=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=unordered_domain_values,inference=forward_checking)
+    solution2=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=lcv,inference=forward_checking)
     print(solution2,"in time",time.time()-start,"by FC+MRV")
     start=time.time()
-    AC3(problem3)
-    solution3=backtracking_search(problem3)
+    solution3=backtracking_search(problem3,select_unassigned_variable=mrv,order_domain_values=lcv,inference=mac)
     print(solution3,"in time",time.time()-start,"by AC3 +backtracking")
 ###########################################################################################
 def tinyKakuroConstraints(csp,setVar,setVal,var,val):
@@ -96,7 +95,25 @@ def tinyKakuroSolver():
     "3,3":["2,3","3,2"]
     }
     problem1=CSP(variables,domain,neighbours,tinyKakuroConstraints)
-    solution=(backtracking_search(problem1))
+    problem2=CSP(variables,domain,neighbours,tinyKakuroConstraints)
+    start=time.time()
+    result=backtracking_search(problem1,select_unassigned_variable=mrv,order_domain_values=lcv,inference=forward_checking)
+    end=time.time()
+    print(end-start)
+    start=time.time()
+    result=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=lcv,inference=mac)
+    end=time.time()
+    print(end-start)
+    time1=end-start
+
+    ######################
+    start=time.time()
+    AC3(problem2)
+    result=backtracking_search(problem2)
+    end=time.time()
+    time2=end-start
+    print("tiny kakuro solved by BT+FC+MRV",time1,"By BT+AC3",time2)
+    solution=(backtracking_search(problem1,))
     print solution
 ############################################################################################
 def FiveX5kakuroConstr(csp,setVar,setVal,var,val):
@@ -162,16 +179,15 @@ def FiveX5kakuroSolver():
     print(solution1,"by backtracking in",time.time()-start,"seconds")
     print("\n\n")
     start=time.time()
-    solution2=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=unordered_domain_values,inference=forward_checking)
+    solution2=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=lcv,inference=forward_checking)
     print(solution2,"by forward_checking +MRV in",time.time()-start,"seconds")
     print("\n\n")
     start=time.time()
-    AC3(problem3)
-    solution3=backtracking_search(problem3)
+    solution3=backtracking_search(problem3,select_unassigned_variable=mrv,order_domain_values=lcv,inference=forward_checking)
     print(solution3,"by AC3 in",time.time()-start,"seconds")
 if __name__ == "__main__":
     #print("4x4 kakuro\n")
     #fourX4_kakuro1()
     #print("tiny kakuro\n")
     #tinyKakuroSolver()
-    FiveX5kakuroSolver()
+    #FiveX5kakuroSolver()

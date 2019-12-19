@@ -84,12 +84,12 @@ def largeKakuroSolver():
     problem1=CSP(Variables,domain,neighbors,largeKakuroConstraints)
     problem2=CSP(Variables,domain,neighbors,largeKakuroConstraints)
     start=time.time()
-    result=backtracking_search(problem1,select_unassigned_variable=mrv,order_domain_values=unordered_domain_values,inference=forward_checking)
+    result=backtracking_search(problem1,select_unassigned_variable=mrv,order_domain_values=lcv,inference=forward_checking)
     total=time.time()-start
     print(result,"in time",total,"by FC+MRV+BT")
     start=time.time()
-    print(AC3(problem2))
-    result2=backtracking_search(problem2,select_unassigned_variable=mrv)
+    #print(AC3(problem2))
+    result2=backtracking_search(problem2,select_unassigned_variable=mrv,order_domain_values=lcv,inference=mac)
     total=time.time()-start
     print(result2,"in time",total,"by AC3+BT+MRV")
 if __name__ == "__main__":

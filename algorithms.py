@@ -73,6 +73,9 @@ class CSP():
     def nconflicts(self, var, val, assignment):
         """Return the number of conflicts var=val has with other variables."""
         def conflict(var2):
+            #for var2 in assignment:
+            #    if not self.constraints(self,var, val, var2, assignment[var2]):
+            #        print var2,var
             return var2 in assignment and not self.constraints(self,var, val, var2, assignment[var2])
 
         return count(conflict(v) for v in self.neighbors[var])
@@ -156,6 +159,7 @@ def AC3(csp, queue=None, removals=None, arc_heuristic=dom_j_up):
         revised, checks = revise(csp, Xi, Xj, removals, checks)
         if revised:
             if not csp.curr_domains[Xi]:
+                #print ("inconsistent",Xi)
                 return False, checks  # CSP is inconsistent
             for Xk in csp.neighbors[Xi]:
                 if Xk != Xj:
@@ -181,7 +185,9 @@ def revise(csp, Xi, Xj, removals, checks=0):
     return revised, checks
 
 
-
+def mac(csp, var, value, assignment, removals, constraint_propagation=AC3):
+    """Maintain arc consistency."""
+    return constraint_propagation(csp, {(X, var) for X in csp.neighbors[var]}, removals)
 # Constraint Propagation with AC4
 # ______________________________________________________________________________
 # CSP Backtracking Search
@@ -266,6 +272,8 @@ def backtracking_search(csp, select_unassigned_variable=first_unassigned_variabl
         return None
 
     result = backtrack({})
+    if not csp.goal_test(result):
+        print(result)
     assert result is None or csp.goal_test(result)
     return result
 ################## ##################################################################################################
@@ -362,13 +370,13 @@ def SmallKakuroSolver():
     end =time.time()
     print("this solution wa found in",end-start,"seconds by backtracking\n")
     start=time.time()
-    print(backtracking_search(problem,select_unassigned_variable=first_unassigned_variable,order_domain_values=unordered_domain_values,inference=forward_checking))
+    print(backtracking_search(problem,select_unassigned_variable=first_unassigned_variable,order_domain_values=lcv,inference=forward_checking))
     end=time.time()
     print("this solution was found in ",end-start,"by FC+MRV")
     start=time.time()
     isPrunable,num_of_checks=AC3(problemCopy)
     print(isPrunable,"in ",num_of_checks,"checks")
-    print(backtracking_search(problemCopy,select_unassigned_variable=first_unassigned_variable))
+    print(backtracking_search(problemCopy,select_unassigned_variable=first_unassigned_variable,order_domain_values=lcv,inference=mac))
     end=time.time()
     print("This solution was found in",end-start,"By AC3")
 
